@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
-  "type": "module",
   "scripts": {
-    "start": "nodemon server.js",
-    "migrate": "sequelize db:sqlite3 database.sqlite3migrate"
+    "start": "nodemon  -r esm server.js",
+    "migrate": "sequelize db:migrate",
+    "generate": "sequelize model:generate "
   },
   "dependencies": {
     "body-parser": "^1.19.0",
+    "esm": "^3.2.25",
     "express": "^4.17.1",
     "nodemon": "^2.0.4",
     "sequelize": "^6.3.5",
