@@ -1,30 +1,38 @@
 import db from "../models";
 import { Router } from "express";
+
 const userRoutes = Router();
+
 userRoutes.get("/api/users", (req, res) => {
-  return db.User.findAll()
+  return db.user
+    .findAll()
     .then((users) => res.send(users))
     .catch((err) => {
       console.log("error occured", JSON.stringify(err));
       return res.send(err);
     });
 });
-userRoutes.post("/api/users", (req, res) => {
-  const { firstName, lastName, age, color } = req.body;
-  return db.User.create({ firstName, lastName, age, color })
+
+userRoutes.post("/api/register", (req, res) => {
+  const { first_name, last_name, email, age, password } = req.body;
+  return db.user
+    .create({ first_name, last_name, age, email, password })
     .then((user) => res.send(user))
     .catch((err) => {
       console.log("error happened on creation", JSON.stringify(err));
       return res.status(400).send(err);
     });
 });
+
 userRoutes.put("/api/users/:id", (req, res) => {
   const id = parseInt(req.params.id);
-  const { first_name, last_name, age } = req.body;
+  const { first_name, last_name, age, email } = req.body;
+
   const payload = {
     first_name,
     last_name,
     age,
+    email,
   };
   return db.user
     .update(payload, {
@@ -36,10 +44,11 @@ userRoutes.put("/api/users/:id", (req, res) => {
 
 userRoutes.delete("/api/users/:id", (req, res) => {
   const id = parseInt(req.params.id);
-  return db.User.destroy({
-    where: { id },
-  })
-    .then((User) => res.send("User has been Deleted!"))
+  return db.user
+    .destroy({
+      where: { id },
+    })
+    .then(() => res.send("user has been Deleted!"))
     .catch((err) => {
       console.log("error happened on creation", JSON.stringify(err));
     });
