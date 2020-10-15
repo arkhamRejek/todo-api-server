@@ -13,17 +13,6 @@ userRoutes.get("/api/users", (req, res) => {
     });
 });
 
-userRoutes.post("/api/register", (req, res) => {
-  const { first_name, last_name, email, age, password } = req.body;
-  return db.user
-    .create({ first_name, last_name, age, email, password })
-    .then((user) => res.send(user))
-    .catch((err) => {
-      console.log("error happened on creation", JSON.stringify(err));
-      return res.status(400).send(err);
-    });
-});
-
 userRoutes.put("/api/users/:id", (req, res) => {
   const id = parseInt(req.params.id);
   const { first_name, last_name, age, email } = req.body;
@@ -53,4 +42,33 @@ userRoutes.delete("/api/users/:id", (req, res) => {
       console.log("error happened on creation", JSON.stringify(err));
     });
 });
+
+userRoutes.post("/api/register", (req, res) => {
+  const { first_name, last_name, email, age, password } = req.body;
+  return db.user
+    .create({ first_name, last_name, age, email, password })
+    .then((user) => res.send(user))
+    .catch((err) => {
+      console.log("error happened on creation", JSON.stringify(err));
+      return res.status(400).send(err);
+    });
+});
+
+userRoutes.post("/api/login", (req, res) => {
+  const { email, password } = req.body;
+
+  return db.user
+    .findOne({ where: { email } })
+    .then((user) => {
+      const passwordValid = user.password === password;
+
+      if (passwordValid) return res.send(user);
+
+      return res.status(400).send("bad password");
+    })
+    .catch(() => {
+      return res.status(400).send("your username/password is incorrect");
+    });
+});
+
 export { userRoutes };
