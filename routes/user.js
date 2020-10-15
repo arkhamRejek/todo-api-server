@@ -1,5 +1,6 @@
 import db from "../models";
 import { Router } from "express";
+import bcrypt from "bcrypt";
 
 const userRoutes = Router();
 
@@ -45,9 +46,22 @@ userRoutes.delete("/api/users/:id", (req, res) => {
 
 userRoutes.post("/api/register", (req, res) => {
   const { first_name, last_name, email, age, password } = req.body;
-  return db.user
-    .create({ first_name, last_name, age, email, password })
-    .then((user) => res.send(user))
+
+  const saltRounds = 10;
+
+  return bcrypt
+    .hash(password, saltRounds)
+    .then(async (passwordHash) => {
+      const user = await db.user.create({
+        first_name,
+        last_name,
+        age,
+        email,
+        password: passwordHash,
+      });
+
+      return res.send(user);
+    })
     .catch((err) => {
       console.log("error happened on creation", JSON.stringify(err));
       return res.status(400).send(err);
@@ -59,8 +73,8 @@ userRoutes.post("/api/login", (req, res) => {
 
   return db.user
     .findOne({ where: { email } })
-    .then((user) => {
-      const passwordValid = user.password === password;
+    .then(async (user) => {
+      const passwordValid = await bcrypt.compare(password, user.password);
 
       if (passwordValid) return res.send(user);
 
