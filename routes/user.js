@@ -1,6 +1,7 @@
 import db from "../models";
 import { Router } from "express";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 const userRoutes = Router();
 
@@ -76,7 +77,13 @@ userRoutes.post("/api/login", (req, res) => {
     .then(async (user) => {
       const passwordValid = await bcrypt.compare(password, user.password);
 
-      if (passwordValid) return res.send(user);
+      if (passwordValid) {
+        const token = jwt.sign({ user }, process.env.JWT_SECRET, {
+          expiresIn: "15s",
+        });
+
+        return res.send({ token });
+      }
 
       return res.status(400).send("bad password");
     })

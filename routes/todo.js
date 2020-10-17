@@ -1,9 +1,10 @@
 import { Router } from "express";
+import { verifyAuth } from "./helper";
 import db from "../models";
 
 const todoRoutes = Router();
 
-todoRoutes.get("/api/todos", (_, res) => {
+todoRoutes.get("/api/todos", verifyAuth, (_, res) => {
   return db.todo
     .findAll()
     .then((todo) => res.send(todo))
