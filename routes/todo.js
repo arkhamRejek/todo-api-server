@@ -4,7 +4,8 @@ import db from "../models";
 
 const todoRoutes = Router();
 
-todoRoutes.get("/api/todos", verifyAuth, (_, res) => {
+todoRoutes.get("/api/todos", verifyAuth, (req, res) => {
+  const currentUser = req.user;
   return db.todo
     .findAll()
     .then((todo) => res.send(todo))
