@@ -1,7 +1,6 @@
 import jwt from "jsonwebtoken";
 
 export function verifyAuth(req, res, next) {
-  console.log(req.headers);
   const token = req.headers.authorization.split(" ")[1];
 
   try {
@@ -12,6 +11,6 @@ export function verifyAuth(req, res, next) {
     next();
   } catch (err) {
     // err
-    return res.status(401).send("not authorized");
+    return res.status(401).send(err);
   }
 }

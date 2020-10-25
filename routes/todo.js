@@ -15,7 +15,7 @@ todoRoutes.get("/api/todos", verifyAuth, (req, res) => {
     });
 });
 
-todoRoutes.post("/api/todos", (req, res) => {
+todoRoutes.post("/api/todos", verifyAuth, (req, res) => {
   const { name, description } = req.body;
 
   return db.todo
@@ -24,7 +24,7 @@ todoRoutes.post("/api/todos", (req, res) => {
     .catch((err) => res.send(err));
 });
 
-todoRoutes.put("/api/todos/:id", (req, res) => {
+todoRoutes.put("/api/todos/:id", verifyAuth, (req, res) => {
   const id = parseInt(req.params.id);
   const { name, description } = req.body;
 
@@ -41,7 +41,7 @@ todoRoutes.put("/api/todos/:id", (req, res) => {
     .catch((err) => res.send(err));
 });
 
-todoRoutes.delete("/api/todos/:id", (req, res) => {
+todoRoutes.delete("/api/todos/:id", verifyAuth, (req, res) => {
   const id = parseInt(req.params.id);
 
   return db.todo
