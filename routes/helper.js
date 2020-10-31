@@ -10,6 +10,7 @@ export function verifyAuth(req, res, next) {
 
     next();
   } catch (err) {
+    console.log(err);
     // err
     return res.status(401).send(err);
   }

@@ -79,7 +79,7 @@ userRoutes.post("/api/login", (req, res) => {
 
       if (passwordValid) {
         const token = jwt.sign({ user }, process.env.JWT_SECRET, {
-          expiresIn: "15s",
+          expiresIn: "1h",
         });
 
         return res.send({ token });
