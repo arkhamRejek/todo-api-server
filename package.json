@@ -6,7 +6,7 @@
   "scripts": {
     "start": "nodemon  -r esm server.js",
     "migrate": "sequelize db:migrate",
-    "generate": "sequelize model:generate",
+    "generate": "sequelize model:generate --name",
     "migration": "sequelize migration:generate --name"
   },
   "dependencies": {

@@ -69,6 +69,8 @@ userRoutes.post("/api/register", (req, res) => {
     });
 });
 
+const refreshDb = [];
+
 userRoutes.post("/api/login", (req, res) => {
   const { email, password } = req.body;
 
@@ -79,10 +81,14 @@ userRoutes.post("/api/login", (req, res) => {
 
       if (passwordValid) {
         const token = jwt.sign({ user }, process.env.JWT_SECRET, {
-          expiresIn: "1h",
+          expiresIn: "60s",
         });
 
-        return res.send({ token });
+        const refreshToken = jwt.sign({ user }, process.env.JWT_REFRESH);
+
+        refreshDb.push(refreshToken);
+
+        return res.send({ token, refreshToken });
       }
 
       return res.status(400).send("bad password");
@@ -90,6 +96,33 @@ userRoutes.post("/api/login", (req, res) => {
     .catch(() => {
       return res.status(400).send("your username/password is incorrect");
     });
+});
+
+userRoutes.post("/api/refresh", (req, res) => {
+  const currentUser = req.user;
+
+  try {
+    const { token } = req.body;
+    const found = refreshDb.find(token);
+
+    if (!found) {
+      return res.status(401).send("your token is invalid");
+    }
+
+    const valid = jwt.verify(token, process.env.JWT_REFRESH);
+
+    if (valid) {
+      const token = jwt.sign({ user: currentUser }, process.env.JWT_SECRET, {
+        expiresIn: "60s",
+      });
+
+      return res.send({ token });
+    }
+
+    return res.status(401).send("your token is invalid");
+  } catch (e) {
+    res.status(401).send(e);
+  }
 });
 
 export { userRoutes };
