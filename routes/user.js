@@ -1,7 +1,7 @@
 import db from "../models";
 import { Router } from "express";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import jwt, { TokenExpiredError } from "jsonwebtoken";
 
 const userRoutes = Router();
 
@@ -69,8 +69,6 @@ userRoutes.post("/api/register", (req, res) => {
     });
 });
 
-const refreshDb = [];
-
 userRoutes.post("/api/login", (req, res) => {
   const { email, password } = req.body;
 
@@ -80,15 +78,18 @@ userRoutes.post("/api/login", (req, res) => {
       const passwordValid = await bcrypt.compare(password, user.password);
 
       if (passwordValid) {
-        const token = jwt.sign({ user }, process.env.JWT_SECRET, {
+        const accessToken = jwt.sign({ user }, process.env.JWT_SECRET, {
           expiresIn: "60s",
         });
 
         const refreshToken = jwt.sign({ user }, process.env.JWT_REFRESH);
 
-        refreshDb.push(refreshToken);
+        await db.refresh.create({
+          user_id: user.id,
+          token: refreshToken,
+        });
 
-        return res.send({ token, refreshToken });
+        return res.send({ accessToken, refreshToken });
       }
 
       return res.status(400).send("bad password");
@@ -98,25 +99,29 @@ userRoutes.post("/api/login", (req, res) => {
     });
 });
 
-userRoutes.post("/api/refresh", (req, res) => {
-  const currentUser = req.user;
-
+userRoutes.post("/api/refresh", async (req, res) => {
   try {
     const { token } = req.body;
-    const found = refreshDb.find(token);
+    const record = await db.refresh.findOne({ where: { token } });
 
-    if (!found) {
+    if (!record) {
       return res.status(401).send("your token is invalid");
     }
 
-    const valid = jwt.verify(token, process.env.JWT_REFRESH);
+    const obj = jwt.verify(token, process.env.JWT_REFRESH);
 
-    if (valid) {
-      const token = jwt.sign({ user: currentUser }, process.env.JWT_SECRET, {
-        expiresIn: "60s",
-      });
+    if (obj) {
+      const currentUser = obj.user;
 
-      return res.send({ token });
+      const accessToken = jwt.sign(
+        { user: currentUser },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: "60s",
+        }
+      );
+
+      return res.send({ accessToken });
     }
 
     return res.status(401).send("your token is invalid");
