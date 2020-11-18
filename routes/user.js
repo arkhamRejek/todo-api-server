@@ -79,7 +79,7 @@ userRoutes.post("/api/login", (req, res) => {
 
       if (passwordValid) {
         const accessToken = jwt.sign({ user }, process.env.JWT_SECRET, {
-          expiresIn: "60s",
+          expiresIn: "30s",
         });
 
         const refreshToken = jwt.sign({ user }, process.env.JWT_REFRESH);
@@ -117,7 +117,7 @@ userRoutes.post("/api/refresh", async (req, res) => {
         { user: currentUser },
         process.env.JWT_SECRET,
         {
-          expiresIn: "60s",
+          expiresIn: "30s",
         }
       );
 
