@@ -1,7 +1,8 @@
 import db from "../models";
 import { Router } from "express";
 import bcrypt from "bcrypt";
-import jwt, { TokenExpiredError } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
+import { verifyAuth } from "./helper";
 
 const userRoutes = Router();
 
@@ -128,6 +129,15 @@ userRoutes.post("/api/refresh", async (req, res) => {
   } catch (e) {
     res.status(401).send(e);
   }
+});
+
+userRoutes.post("/api/logout", verifyAuth, async (req, res) => {
+  const currentUser = req.user;
+
+  return db.refresh
+    .destroy({ where: { user_id: currentUser.id } })
+    .then(() => res.send({}))
+    .catch((err) => res.send(err));
 });
 
 export { userRoutes };
